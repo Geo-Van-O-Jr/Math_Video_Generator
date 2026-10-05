@@ -1,0 +1,18 @@
+id: imo_2025_n3
+competition: IMO Shortlist
+year: 2025
+section: Number Theory
+problem: N3
+language: en
+title: "Which Starting Values Survive Forever?"
+scene_order:
+  - scene_01_problem
+  - scene_02_experiment
+  - scene_03_divisor_duality
+  - scene_04_odd_numbers
+  - scene_05_factor_three
+  - scene_06_three_cases
+  - scene_07_case_five
+  - scene_08_finite_growth
+  - scene_09_reconstruction
+  - scene_10_conclusion

@@ -1,0 +1,7 @@
+.venv/
+.tools/
+**/__pycache__/
+math_video_engine/renders/
+math_video_engine/episodes/*/media/
+math_video_engine/episodes/*/output/
+*.log
