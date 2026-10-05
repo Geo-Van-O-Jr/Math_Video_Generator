@@ -4,6 +4,13 @@ from engine import reference_theme as T
 from engine.components.reference_visuals import *
 
 
+def character_icon(name,point,color,height):
+    """Keep geometry behind the silhouette while retaining the approved glow."""
+    visible=glow_icon(name,point,color,height=height)
+    silhouette=visible[-1].copy().set_fill(T.BG,opacity=1).set_stroke(T.BG,width=T.PRIMARY_STROKE)
+    return VGroup(silhouette,visible)
+
+
 def statement_geometry(state):
     if state not in ('opening','initial','generic','rabbit','tracking','hunter','question'):
         raise ValueError(state)
@@ -12,15 +19,16 @@ def statement_geometry(state):
     group=VGroup()
     if state in ('opening','initial'):
         origin=np.array([4.2,.2,0])
-        # Concentric markers share exactly the same mathematical center.
-        hunter=glow_dot(origin,T.BLUE)
-        rabbit=Circle(radius=T.POINT_RADIUS*1.7,color=T.GOLD,
-                      stroke_width=T.PRIMARY_STROKE).move_to(origin)
-        group.add(hunter,soft_glow(rabbit,T.GOLD),rabbit)
-        group.add(formula('H',T.LABEL,T.BLUE).move_to(origin+[-.55,-.48,0]),
-                  formula('R',T.LABEL,T.GOLD).move_to(origin+[.55,-.48,0]))
+        # Offset glyphs are callouts to ONE geometric anchor, not two positions.
+        hunter=character_icon('hunter',origin+[-.42,.35,0],T.BLUE,height=.65)
+        rabbit=character_icon('rabbit',origin+[.42,.35,0],T.GOLD,height=.65)
+        group.add(glow_line(origin,origin+[-.42,.05,0],T.BLUE),
+                  glow_line(origin,origin+[.42,.05,0],T.GOLD),
+                  glow_dot(origin,T.TEXT_PRIMARY,radius=.045),hunter,rabbit)
+        group.add(formula('B_0',T.LABEL,T.BLUE).next_to(hunter,LEFT,buff=.12),
+                  formula('A_0',T.LABEL,T.GOLD).next_to(rabbit,RIGHT,buff=.12))
         if state=='initial':
-            group.add(formula('A_0=B_0',T.MATH).move_to(origin+[0,.95,0]))
+            group.add(formula('A_0=B_0',T.MATH).move_to(origin+[0,1.18,0]))
         group.anchor_positions={'hunter':origin.copy(),'rabbit':origin.copy()}
         return group
     rabbit_moved=state in ('rabbit','tracking','hunter','question')
@@ -47,9 +55,11 @@ def statement_geometry(state):
                     glow_dot(h,T.BLUE,radius=.047,active=False))
         if state!='hunter': move.fade(1-T.HISTORY_OPACITY)
         group.add(move)
-    group.add(glow_dot(hp,T.BLUE),glow_dot(rp,T.GOLD),
-              formula('B_n' if hunter_moved else 'B_{n-1}',T.LABEL,T.BLUE).move_to(hp+[0,-.53,0]),
-              formula('A_n' if rabbit_moved else 'A_{n-1}',T.LABEL,T.GOLD).move_to(rp+[.10,-.60,0]))
+    hunter=character_icon('hunter',hp,T.BLUE,height=.60)
+    rabbit=character_icon('rabbit',rp,T.GOLD,height=.65)
+    hunter_label=formula('B_n' if hunter_moved else 'B_{n-1}',T.LABEL,T.BLUE).next_to(hunter,DOWN,buff=.10)
+    rabbit_label=formula('A_n' if rabbit_moved else 'A_{n-1}',T.LABEL,T.GOLD).next_to(rabbit,DOWN,buff=.10)
+    group.add(VGroup(hunter,hunter_label),VGroup(rabbit,rabbit_label))
     if state=='question':
         group.add(serif(accent('$10^9$',T.GREEN)+' rounds',T.BODY).move_to([5.15,-2.46,0]))
     group.anchor_positions={'hunter':hp.copy(),'rabbit':rp.copy()}

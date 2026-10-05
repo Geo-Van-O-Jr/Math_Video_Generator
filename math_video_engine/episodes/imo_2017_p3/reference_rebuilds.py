@@ -2,7 +2,7 @@
 from manim import *
 from engine import reference_theme as T
 from engine.components.reference_visuals import *
-from engine.components.statement_geometry import statement_geometry
+from engine.components.statement_geometry import statement_geometry, character_icon
 
 config.frame_width=T.FRAME_WIDTH
 config.frame_height=T.FRAME_HEIGHT
@@ -120,7 +120,7 @@ class TwoWorldsReference(ReferenceStill):
         title.move_to([0,T.SAFE_ZONE.top,0],aligned_edge=UP)
         subtitle=serif('The same tracker reports are valid in both worlds.',T.SUBTITLE_SIZE,
                        T.TEXT_SECONDARY).move_to([0,3.02,0])
-        # Rotate the official construction: H_n, R_n and all common pings
+        # Rotate the official construction: B_n, A_n and all common pings
         # lie on the vertical axis; Y_1 and Y_2 are its reflected endpoints.
         # The final unit-error disk is independently enlarged for visibility.
         r=np.array([0,-.68,0]); h=np.array([0,-1.38,0]); z=np.array([0,1.22,0])
@@ -139,8 +139,8 @@ class TwoWorldsReference(ReferenceStill):
         labels=VGroup(
             formula('Y_1',T.MATH_LARGE,T.RED).move_to([-4.60,1.85,0]),
             formula('Y_2',T.MATH_LARGE,T.BLUE).move_to([4.60,1.85,0]),
-            formula('R_n',T.LABEL,T.GOLD).move_to([.53,-.69,0]),
-            formula('H_n',T.LABEL,T.BLUE_SOFT).move_to([-.65,-1.16,0]),
+            formula('A_n',T.LABEL,T.GOLD).move_to([.53,-.69,0]),
+            formula('B_n',T.LABEL,T.BLUE_SOFT).move_to([-.65,-1.16,0]),
             formula('Z=P_{200}',T.LABEL,T.TEXT_PRIMARY).move_to([0,1.91,0]),
             formula('200',T.LABEL,T.RED_SOFT).move_to([-2.55,-.14,0]),
             formula('200',T.LABEL,T.BLUE_SOFT).move_to([2.55,-.14,0]),
@@ -158,9 +158,9 @@ class TwoWorldsReference(ReferenceStill):
                     stroke_width=T.AUXILIARY_STROKE).set_opacity(T.CONSTRUCTION_OPACITY))
         pinglabel=formula('P_k',T.LABEL,T.GREEN_SOFT).move_to([.64,.26,0])
         points=VGroup(glow_dot(y1,T.RED),glow_dot(y2,T.BLUE),
-                      glow_dot(z,T.TEXT_PRIMARY),glow_dot(r,T.GOLD,radius=.10),
-                      glow_dot(h,T.BLUE,radius=.10))
-        equation=formula(r'|P_kR_{n+k}^{(+)}|=|P_kR_{n+k}^{(-)}|=\frac{k}{200}\leq1',
+                      glow_dot(z,T.TEXT_PRIMARY),character_icon('rabbit',r,T.GOLD,height=.53),
+                      character_icon('hunter',h,T.BLUE,height=.48))
+        equation=formula(r'|P_kA_{n+k}^{(+)}|=|P_kA_{n+k}^{(-)}|=\frac{k}{200}\leq1',
                          T.MATH,T.TEXT_PRIMARY).move_to([0,-2.14,0])
         conclusion=serif('Same information. '+accent('Same hunter strategy.',T.GOLD,True),T.BODY_LARGE)
         conclusion.move_to([0,-3.28,0])
