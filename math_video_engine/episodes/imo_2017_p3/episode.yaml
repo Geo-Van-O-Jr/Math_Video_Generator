@@ -1,0 +1,13 @@
+id: imo_2017_p3
+competition: IMO
+year: 2017
+problem: 3
+language: en
+title: "The hunter and the invisible rabbit"
+requires_preview_approval: true
+scene_order:
+  - scene_01_game
+  - scene_02_strategy
+  - scene_03_two_routes
+  - scene_04_estimate
+  - scene_05_conclusion

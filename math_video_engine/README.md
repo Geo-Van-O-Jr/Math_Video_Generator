@@ -1,5 +1,47 @@
 # Mathematics Video Engine v0.1
 
+## IMO 2017 Problem 3: persistent proof canvas
+
+The new `imo_2017_p3` episode reconstructs the supplied navy/serif/vector
+references as continuous Manim geometry. Its five internal render segments
+have no visible chapter system and share exact boundary constructors in
+`episodes/imo_2017_p3/visuals.py`. It is silent and uses the official 200-round
+argument, with the initial coincident position and the contest's `<=100`
+boundary treated explicitly. See its `screenplay.md` and `sources/README.md`.
+
+```powershell
+cd math_video_engine
+..\.venv\Scripts\python.exe build.py imo_2017_p3 --preview
+..\.venv\Scripts\python.exe tools/verify_hunter_rabbit.py
+..\.venv\Scripts\python.exe tools/inspect_video.py imo_2017_p3 --preview
+# Only after the user approves the reviewed complete preview:
+..\.venv\Scripts\python.exe build.py imo_2017_p3 --final --approve-preview
+```
+
+The reusable opt-in components live in `engine/components/living_canvas.py`:
+`PersistentCanvas`, `ProofWriter` / `EquationDerivation`, `PersistentFact`,
+`TrackedPoint` / `MovingPoint`, `UncertaintyDisk`, `DashedTrajectory`,
+`DistanceAnnotation`, `SymmetricChoices` and `ResultHighlight`. Canvas cues
+are semantic review points, never on-screen slide numbers. Prose is written
+line by line; equations transform in place; facts can be pinned and dimmed.
+SVG icons live in `engine/assets/`. The original episode's base scene and
+theme remain intact.
+
+Build fingerprints now include episode-level Python helpers and SVG assets.
+The new episode requires a current inspected preview and explicit approval
+before a final render. The approval records a source fingerprint; source
+changes invalidate it. Do not pass `--approve-preview` as a substitute for
+the user's actual approval.
+
+Inspection decodes all video frames, checks silent profile-conformant clips,
+extracts semantic keyframes, creates side-by-side reference comparisons,
+exports eight-second contact sheets, and measures pixel differences across
+internal boundaries. Outputs are in `output/inspection_preview/`. The
+mathematical verifier checks true world coordinates, including common pings,
+200 unit-length steps, the minimax endpoint bound and exact round accounting.
+
+---
+
 A local Manim Community project for silent, English mathematics exposition.
 The first episode solves IMO Shortlist 2025, Number Theory N3. Its ten
 independent scenes follow the supplied proof, with an explicit sufficiency
@@ -52,10 +94,11 @@ Preview is 854×480 at 15 fps; final is 1920×1080 at 60 fps, both 16:9.
 Use `--force` to rebuild despite the cache. A selected scene produces only
 its clip; rerun the full build to reassemble the episode. Preview and final
 caches are separate. Scene source, engine code, configuration, metadata,
-Python version and Manim version form the fingerprint. Changing one scene
+Python version and Manim version form the fingerprint. Episode-level Python
+helpers and SVG assets are included automatically. Changing one scene
 invalidates that scene; changing the shared engine invalidates all scenes.
-When adding episode-specific helper modules, include them in `shared` in
-`build.py` so changes invalidate dependent scenes.
+Keep episode-specific helper modules at the episode root so the renderer
+includes them in `shared` and invalidates dependent scenes.
 
 Build errors are reported with a log path and an excerpt. If external FFmpeg
 is absent, the `imageio-ffmpeg` wheel supplies its executable. If neither is

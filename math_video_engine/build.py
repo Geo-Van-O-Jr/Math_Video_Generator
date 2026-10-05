@@ -1,5 +1,6 @@
 """Render independent Manim modules, cache them, and concatenate a silent MP4."""
 import argparse
+import hashlib
 import importlib.metadata
 import json
 import os
@@ -19,6 +20,8 @@ def main():
     quality.add_argument("--final", action="store_true")
     parser.add_argument("--scene", type=int, help="One-based scene number")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--approve-preview", action="store_true",
+                        help="Record explicit user approval of the current preview before final rendering")
     args = parser.parse_args()
     episode = ROOT / "episodes" / args.episode
     if episode.parent != ROOT / "episodes" or not episode.is_dir():
@@ -32,11 +35,36 @@ def main():
     ffmpeg = executable("ffmpeg")
     profile = "final" if args.final else "preview"
     settings = PROFILES[profile]
-    shared = list((ROOT / "engine").rglob("*.py")) + [ROOT / "config.py", ROOT / "build.py",
-                                                        episode / "episode.yaml"]
+    shared = (list((ROOT / "engine").rglob("*.py")) +
+              list((ROOT / "engine" / "assets").glob("*.svg")) +
+              list(episode.glob("*.py")) +
+              [ROOT / "config.py", ROOT / "build.py", episode / "episode.yaml"])
     out = episode / "output"
     cache_path = out / f"cache_{profile}.json"
     out.mkdir(parents=True, exist_ok=True)
+    if profile == "final" and metadata.get("requires_preview_approval"):
+        preview = out / f"{args.episode}_preview.mp4"
+        inspection = out / "inspection_preview" / "report.json"
+        if not preview.exists() or not inspection.exists():
+            parser.error("Render and inspect the complete preview before final rendering")
+        reviewed_sources = fingerprint(shared + list((episode / "scenes").glob("*.py")),
+                                       PROFILES["preview"])
+        report = json.loads(inspection.read_text(encoding="utf-8"))
+        if report.get("source_fingerprint") != reviewed_sources:
+            parser.error("Preview inspection is stale: rebuild and inspect after source changes")
+        with preview.open('rb') as handle:
+            preview_digest = hashlib.file_digest(handle, 'sha256').hexdigest()
+        if report.get('video_sha256') != preview_digest:
+            parser.error("The preview video changed after inspection; inspect it again")
+        approval_path = out / "preview_approval.json"
+        if args.approve_preview:
+            approval_path.write_text(json.dumps({"source_fingerprint": reviewed_sources,
+                "video_sha256": preview_digest, "preview": str(preview),
+                "approved": True}, indent=2), encoding="utf-8")
+        approval = json.loads(approval_path.read_text()) if approval_path.exists() else {}
+        if (approval.get("source_fingerprint") != reviewed_sources or
+                approval.get('video_sha256') != preview_digest or not approval.get("approved")):
+            parser.error("This episode requires user preview approval; after approval use --approve-preview")
     cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT) + os.pathsep + env.get("PYTHONPATH", "")
@@ -82,6 +110,12 @@ def main():
         return
     final = out / f"{args.episode}_{profile}.mp4"
     concatenate(clips, final, ffmpeg)
+    with final.open('rb') as handle:
+        video_digest = hashlib.file_digest(handle, 'sha256').hexdigest()
+    manifest = {'source_fingerprint': fingerprint(
+        shared + list((episode / 'scenes').glob('*.py')), settings),
+        'video_sha256': video_digest}
+    final.with_suffix('.build.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
     print(f"Video ready: {final}")
 
 
